@@ -1,0 +1,3231 @@
+# Recolector de fuentes
+
+- Fecha de generación: 2025-10-20 10:23:41
+- Raíz: `D:/ILERNA/2025-2026/CMO Programacion_en_Python/api-alumnos-basico/fastapi-api-alumnos-basico`
+- Archivo de salida: `repositorio.txt` (chunk 1/1)
+
+## Árbol de archivos incluidos
+
+```text
+
+```
+
+## Índice global (archivo → chunk)
+
+- [001] .env.example
+- [001] .gitignore
+- [001] 0.30
+- [001] alumnos_api/api/__init__.py
+- [001] alumnos_api/api/routers/__init__.py
+- [001] alumnos_api/api/routers/alumnos.py
+- [001] alumnos_api/api/routers/auth.py
+- [001] alumnos_api/api/routers/health.py
+- [001] alumnos_api/core/__init__.py
+- [001] alumnos_api/core/config.py
+- [001] alumnos_api/core/db.py
+- [001] alumnos_api/core/init_db.py
+- [001] alumnos_api/core/logging.py
+- [001] alumnos_api/core/security.py
+- [001] alumnos_api/deps.py
+- [001] alumnos_api/main.py
+- [001] alumnos_api/repositories/__init__.py
+- [001] alumnos_api/repositories/alumnos_repo.py
+- [001] alumnos_api/schemas/__init__.py
+- [001] alumnos_api/schemas/alumno.py
+- [001] alumnos_api/services/__init__.py
+- [001] alumnos_api/services/alumnos_service.py
+- [001] argparse.Namespace
+- [001] bool
+- [001] init_estructura.bat
+- [001] int
+- [001] List[str]
+- [001] MIGRATION_SUMMARY.md
+- [001] None
+- [001] Path
+- [001] README.md
+- [001] recolector_fuentes.py
+- [001] repositorio.txt
+- [001] requirements.txt
+- [001] Set[str]
+- [001] str
+- [001] test_migration.py
+- [001] tests/test_alumnos.py
+- [001] total
+- [001] Tuple[int
+
+## Archivos omitidos (razones)
+
+### excluded_name_or_ext
+- .env
+
+---
+
+README.md
+-----
+```markdown
+# 📚 CRUD de Alumnos — FastAPI + SQLModel + MySQL
+
+Proyecto completo de ejemplo que implementa un **CRUD de alumnos** usando:
+
+- ⚙️ **Backend:** [FastAPI](https://fastapi.tiangolo.com/) + [SQLModel](https://sqlmodel.tiangolo.com/)
+- 🗄️ **Base de datos:** MySQL con SQLAlchemy
+- 💻 **Frontend:** HTML, CSS y JavaScript vanilla
+- 🌐 **CORS habilitado:** compatible con React, Vite o cualquier cliente web moderno
+
+---
+
+## 🚀 Características
+
+- API REST con endpoints CRUD (`GET`, `POST`, `PUT`, `DELETE`)
+- **SQLModel ORM** para manejo type-safe de base de datos
+- Validación de rango de notas (0.0 a 10.0)
+- Cálculo automático del promedio final:  
+  `promedioFinal = ((nota1 + nota2 + nota3)/3)*0.7 + notaFinal*0.3`
+- **Creación automática de tablas** con SQLModel
+- Health check de base de datos (`/health/db`)
+- CORS configurado para desarrollo
+- **Dependency Injection** para sesiones de base de datos
+
+---
+
+## 🧩 Estructura del proyecto
+
+```
+fastapi-api-alumnos-basico/
+│
+├── alumnos_api/
+│   ├── main.py              # Punto de entrada con auto-init de tablas
+│   ├── deps.py              # Dependencias de FastAPI (SessionDep)
+│   ├── api/routers/
+│   │   ├── alumnos.py       # CRUD endpoints con SQLModel
+│   │   └── health.py        # Health checks
+│   ├── core/
+│   │   ├── config.py        # Configuración con Pydantic Settings
+│   │   ├── db.py            # SQLAlchemy engine + Session factory
+│   │   ├── init_db.py       # Script para inicializar tablas
+│   │   └── logging.py       # Sistema de logging
+│   ├── repositories/
+│   │   └── alumnos_repo.py  # Lógica de datos con SQLModel queries
+│   ├── services/
+│   │   └── alumnos_service.py  # Cálculo de promedios
+│   └── schemas/
+│       └── alumno.py        # Modelos SQLModel (tabla + DTOs)
+├── tests/
+├── .env.example             # Configuración de ejemplo
+├── requirements.txt         # Incluye SQLModel
+└── README.md
+```
+
+---
+
+## ⚙️ Requisitos previos
+
+- Python 3.9+
+- MySQL Server 8.x
+- Node.js (opcional, solo si usas React/Vite)
+
+---
+
+## 🗄️ Script SQL de base de datos
+
+Ejecuta este script en tu servidor MySQL (por consola, Workbench o phpMyAdmin):
+
+```sql
+DROP DATABASE IF EXISTS crud_alumnos;
+CREATE DATABASE IF NOT EXISTS crud_alumnos;
+USE crud_alumnos;
+
+CREATE TABLE IF NOT EXISTS alumnos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    nota1 DOUBLE NOT NULL,
+    nota2 DOUBLE NOT NULL,
+    nota3 DOUBLE NOT NULL,
+    notaFinal DOUBLE NOT NULL,
+    promedioFinal DOUBLE NOT NULL
+);
+```
+
+---
+
+## ⚙️ Configuración del Backend
+
+### 1️⃣ Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 2️⃣ Configurar variables de entorno
+Copia y configura el archivo `.env`:
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con tus datos de MySQL:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=crud_alumnos
+```
+
+### 3️⃣ Crear base de datos
+Ejecuta este script en MySQL:
+```sql
+CREATE DATABASE IF NOT EXISTS crud_alumnos;
+```
+
+> ✨ **Las tablas se crean automáticamente** gracias a SQLModel al iniciar la API.
+
+### 4️⃣ Ejecutar la API
+```bash
+.venv\Scripts\activate  
+uvicorn alumnos_api.main:app --reload
+```
+### 3️⃣ Ejecutar la API Pcshell
+```bash
+.\.venv\Scripts\Activate.ps1
+uvicorn alumnos_api.main:app --reload
+
+```
+
+📍 Accede a:
+- API root → http://127.0.0.1:8000/
+- Documentación Swagger → http://127.0.0.1:8000/docs  
+- Health check → http://127.0.0.1:8000/health/db
+
+---
+
+## 🌐 Frontend Vanilla
+
+### 1️⃣ Abrir el proyecto
+En la carpeta `frontend/`, abre el archivo `index.html` en el navegador  
+(recomendado: usar la extensión **Live Server** de VS Code).
+
+### 2️⃣ Interactuar con la API
+Podrás:
+- Crear nuevos alumnos
+- Editar notas existentes
+- Eliminar alumnos
+- Buscar por nombre en tiempo real
+
+🧮 El promedio final se calcula automáticamente en el servidor.
+
+---
+
+## 🔐 CORS (para React / Vite)
+
+Si desarrollas un frontend con React o Vite, tu backend ya acepta peticiones desde:
+
+```python
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+```
+
+Agrega más dominios si lo despliegas en producción.
+
+---
+
+## 🧠 Endpoints principales
+
+| Método | Endpoint | Descripción |
+|:-------|:----------|:-------------|
+| `GET` | `/` | Prueba general de la API |
+| `GET` | `/health/db` | Verifica conexión a MySQL |
+| `GET` | `/alumnos` | Lista todos los alumnos |
+| `GET` | `/alumnos/{id}` | Devuelve un alumno por ID |
+| `POST` | `/alumnos` | Crea un nuevo alumno |
+| `PUT` | `/alumnos/{id}` | Actualiza un alumno existente |
+| `DELETE` | `/alumnos/{id}` | Elimina un alumno |
+
+---
+
+## 🧪 Pruebas rápidas con curl o Postman
+
+**Crear alumno:**
+```bash
+curl -X POST http://127.0.0.1:8000/alumnos ^
+  -H "Content-Type: application/json" ^
+  -d "{"nombre":"Juan Carlos","nota1":9.0,"nota2":8.5,"nota3":9.0,"notaFinal":9.5}"
+```
+
+**Listar alumnos:**
+```bash
+curl http://127.0.0.1:8000/alumnos
+```
+
+---
+
+## 🧰 Tecnologías utilizadas
+
+| Componente | Tecnología |
+|-------------|-------------|
+| Backend | FastAPI + SQLModel |
+| Base de datos | MySQL 8 + SQLAlchemy |
+| ORM | SQLModel (Pydantic + SQLAlchemy) |
+| Dependency Injection | FastAPI Depends |
+| Frontend | HTML5, CSS3, JavaScript (ES6) |
+| Servidor | Uvicorn |
+
+---
+
+## 🆕 Novedades con SQLModel
+
+- **🎯 Type Safety:** Modelos tipados que funcionan tanto para API como BD
+- **🔄 Auto-migrations:** Creación automática de tablas
+- **💉 Dependency Injection:** Sesiones de BD mediante FastAPI Depends
+- **🧪 Fácil testing:** Modelos compartidos entre tests y producción
+- **📝 Menos código:** Un solo modelo para tabla, input y output
+- **🚀 Mejor rendimiento:** Connection pooling con SQLAlchemy
+
+---
+
+## 🧑‍💻 Autor
+
+**Juan Carlos Sulbarán González**  
+📧 sulbaranjc@gmail.com  
+📍 Madrid, España  
+
+> Proyecto educativo para enseñanza de programación y bases de datos.  
+> Licencia MIT — libre uso y adaptación.
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2MDc4NzM4N30.jbUUlRbY6YHKNLjrCv4X1k3DvEKxFf3ZnX3v1SG8Ncw
+
+```
+
+.env.example
+-----
+```
+# Configuración de Base de Datos MySQL
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=crud_alumnos
+
+# Configuración CORS (opcional)
+# ALLOWED_ORIGINS=["http://localhost:3000","http://localhost:5173","http://localhost:8080"]
+```
+
+requirements.txt
+-----
+```
+annotated-types==0.7.0
+anyio==4.11.0
+black==25.9.0
+certifi==2025.10.5
+click==8.3.0
+colorama==0.4.6
+dnspython==2.8.0
+email-validator==2.3.0
+fastapi==0.119.0
+fastapi-cli==0.0.13
+fastapi-cloud-cli==0.3.1
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.7.1
+httpx==0.28.1
+sqlmodel==0.0.21
+sqlalchemy==2.0.32
+pymysql[rsa]==1.1.2
+idna==3.11
+itsdangerous==2.2.0
+Jinja2==3.1.6
+markdown-it-py==4.0.0
+MarkupSafe==3.0.3
+mdurl==0.1.2
+mypy_extensions==1.1.0
+orjson==3.11.3
+packaging==25.0
+pathspec==0.12.1
+platformdirs==4.5.0
+pydantic==2.12.2
+pydantic-extra-types==2.10.6
+pydantic-settings==2.11.0
+pydantic_core==2.41.4
+Pygments==2.19.2
+python-dotenv==1.1.1
+python-multipart==0.0.20
+pytokens==0.1.10
+PyYAML==6.0.3
+rich==14.2.0
+rich-toolkit==0.15.1
+rignore==0.7.0
+sentry-sdk==2.41.0
+shellingham==1.5.4
+sniffio==1.3.1
+starlette==0.48.0
+typer==0.19.2
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+ujson==5.11.0
+urllib3==2.5.0
+uvicorn==0.37.0
+watchfiles==1.1.1
+websockets==15.0.1
+
+```
+
+alumnos_api/api/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/api/routers/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/api/routers/alumnos.py
+-----
+```python
+from typing import List
+from fastapi import APIRouter, Depends
+from ...deps import SessionDep
+from ...schemas.alumno import AlumnoIn, AlumnoOut
+from ...repositories import alumnos_repo as repo
+from ...core.security import JWTBearer
+
+router = APIRouter(prefix="/alumnos", tags=["alumnos"])
+
+@router.get("", response_model=List[AlumnoOut])
+def listar(session: SessionDep):
+    """Listar todos los alumnos"""
+    return repo.listar(session)
+
+@router.get("/{alumno_id}", response_model=AlumnoOut)
+def obtener(alumno_id: int, session: SessionDep):
+    """Obtener un alumno por ID"""
+    return repo.obtener(session, alumno_id)
+
+@router.post("", response_model=AlumnoOut, status_code=201)
+def crear(
+    data: AlumnoIn,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Crear un nuevo alumno (protegido con JWT)"""
+    return repo.crear(session, data)
+
+@router.put("/{alumno_id}", response_model=AlumnoOut)
+def actualizar(
+    alumno_id: int,
+    data: AlumnoIn,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Actualizar un alumno existente (protegido con JWT)"""
+    return repo.actualizar(session, alumno_id, data)
+
+@router.delete("/{alumno_id}")
+def eliminar(
+    alumno_id: int,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Eliminar un alumno (protegido con JWT)"""
+    repo.eliminar(session, alumno_id)
+    return {"deleted": True, "id": alumno_id}
+
+```
+
+alumnos_api/api/routers/auth.py
+-----
+```python
+# alumnos_api/api/routers/auth.py
+
+from fastapi import APIRouter, HTTPException, status, Depends
+from pydantic import BaseModel
+from jose import jwt
+from datetime import datetime, timedelta
+
+from alumnos_api.core.config import settings
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Usuario hardcodeado (por ahora, en memoria)
+USER_DB = {
+    "admin": {
+        "username": "admin",
+        "password": "admin123",  # para pruebas (en producción usar hash)
+    }
+}
+
+# Secretos y expiración
+JWT_SECRET = "supersecreto123"  # En producción ponerlo en .env
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_MINUTES = 60
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+@router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest):
+    user = USER_DB.get(data.username)
+    if not user or data.password != user["password"]:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    expire = datetime.utcnow() + timedelta(minutes=JWT_EXPIRE_MINUTES)
+    payload = {
+        "sub": data.username,
+        "exp": expire
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return {"access_token": token}
+
+```
+
+alumnos_api/api/routers/health.py
+-----
+```python
+from fastapi import APIRouter
+from sqlmodel import text
+from ...deps import SessionDep
+
+router = APIRouter(prefix="/health", tags=["health"])
+
+@router.get("/")
+def root():
+    """Health check básico de la API"""
+    return {"api": "OK"}
+
+@router.get("/db")
+def db(session: SessionDep):
+    """Health check de la base de datos usando SQLModel"""
+    try:
+        result = session.exec(text("SELECT 1 AS ok")).first()
+        return {"db": "up" if result and result[0] == 1 else "unknown"}
+    except Exception as e:
+        return {"db": "down", "error": str(e)}
+
+```
+
+alumnos_api/core/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/core/config.py
+-----
+```python
+# alumnos_api/core/config.py
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+
+class Settings(BaseSettings):
+    app_name: str = "API CRUD Alumnos"
+    version: str = "2.0.0"
+
+    db_host: str
+    db_port: int = 3306
+    db_user: str
+    db_password: str
+    db_name: str
+
+    # Valor por defecto (sirve si no defines ALLOWED_ORIGINS en .env)
+    allowed_origins: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5500",
+    ]
+
+    # ✅ Acepta JSON o CSV en .env (pydantic v2)
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            s = v.strip()
+            if not s:
+                return []
+            if s.startswith("["):   # JSON válido
+                return s
+            # CSV simple: "http://a:3000,http://b:5173"
+            return [x.strip() for x in s.split(",") if x.strip()]
+        return v
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+settings = Settings()  # type: ignore[call-arg]
+
+```
+
+alumnos_api/core/db.py
+-----
+```python
+from sqlmodel import SQLModel, create_engine, Session
+from fastapi import HTTPException
+from .config import settings
+
+# Crear el engine de SQLAlchemy
+DATABASE_URL = (
+    f"mysql+pymysql://{settings.db_user}:{settings.db_password}"
+    f"@{settings.db_host}:{settings.db_port}/{settings.db_name}"
+)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
+    pool_recycle=3600,
+    echo=False  # Cambia a True para debug SQL
+)
+
+def create_db_and_tables():
+    """Crear todas las tablas definidas en SQLModel"""
+    SQLModel.metadata.create_all(engine)
+
+def get_session():
+    """Dependency para obtener una sesión de base de datos"""
+    with Session(engine) as session:
+        try:
+            yield session
+        except HTTPException:
+            # ⚠️ Re-lanza directamente errores HTTP (por ejemplo, de autenticación JWT)
+            raise
+        except Exception as e:
+            session.rollback()
+            raise HTTPException(status_code=500, detail=f"Error de base de datos: {e}")
+        finally:
+            session.close()
+
+
+# Función legacy para compatibilidad (se puede remover después)
+def get_connection():
+    """Función de compatibilidad - usar get_session() en su lugar"""
+    import pymysql
+    from pymysql.cursors import DictCursor
+    try:
+        return pymysql.connect(
+            host=settings.db_host,
+            port=settings.db_port,
+            user=settings.db_user,
+            password=settings.db_password,
+            database=settings.db_name,
+            cursorclass=DictCursor,
+            charset="utf8mb4",
+            connect_timeout=5, read_timeout=5, write_timeout=5,
+            autocommit=False,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de conexión: {e}")
+
+```
+
+alumnos_api/core/init_db.py
+-----
+```python
+"""
+Script para inicializar la base de datos con SQLModel
+"""
+from sqlmodel import SQLModel
+from alumnos_api.core.db import engine
+from alumnos_api.schemas.alumno import Alumno  # Importar para registrar el modelo
+
+def init_db():
+    """
+    Crear todas las tablas en la base de datos
+    """
+    print("🔄 Creando tablas de base de datos...")
+    SQLModel.metadata.create_all(engine)
+    print("✅ Tablas creadas exitosamente!")
+
+def drop_db():
+    """
+    Eliminar todas las tablas de la base de datos
+    """
+    print("🗑️ Eliminando tablas de base de datos...")
+    SQLModel.metadata.drop_all(engine)
+    print("✅ Tablas eliminadas exitosamente!")
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "--drop":
+        drop_db()
+    else:
+        init_db()
+```
+
+alumnos_api/core/logging.py
+-----
+```python
+import logging
+
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+    return logging.getLogger("alumnos-api")
+
+```
+
+alumnos_api/core/security.py
+-----
+```python
+# alumnos_api/core/security.py
+
+from fastapi import Request, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt, JWTError
+from typing import Optional
+
+JWT_SECRET = "supersecreto123"  # ⚠️ Reemplaza esto por una variable de entorno en producción
+JWT_ALGORITHM = "HS256"
+
+class JWTBearer(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super().__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> str:
+        credentials: Optional[HTTPAuthorizationCredentials] = await super().__call__(request)
+        if not credentials or credentials.scheme != "Bearer":
+            raise HTTPException(status_code=403, detail="Token inválido")
+        return self.verify_token(credentials.credentials)
+
+    def verify_token(self, token: str) -> str:
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            username = payload.get("sub")
+            if not isinstance(username, str):
+                raise HTTPException(status_code=403, detail="Token sin usuario válido")
+            return username
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Token inválido o expirado")
+
+```
+
+alumnos_api/deps.py
+-----
+```python
+"""
+Dependencias para FastAPI con SQLModel
+"""
+from typing import Annotated
+from fastapi import Depends
+from sqlmodel import Session
+from .core.db import get_session
+
+# Tipo anotado para la sesión de base de datos
+SessionDep = Annotated[Session, Depends(get_session)]
+
+# Función helper para usar en routers
+def get_db_session() -> Session:
+    """
+    Dependency function para obtener una sesión de base de datos.
+    Usar SessionDep en su lugar para type hints más limpios.
+    """
+    return Depends(get_session)
+
+```
+
+alumnos_api/main.py
+-----
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from alumnos_api.core.config import settings
+from alumnos_api.core.logging import setup_logging
+from alumnos_api.core.db import create_db_and_tables
+from alumnos_api.api.routers import alumnos, health
+from alumnos_api.api.routers import auth  # 👈 nuevo import
+from fastapi.openapi.utils import get_openapi
+
+log = setup_logging()
+
+def create_app() -> FastAPI:
+    app = FastAPI(title=settings.app_name, version=settings.version, debug=True)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(health.router)
+    app.include_router(alumnos.router)
+    app.include_router(auth.router)  # 👈 nuevo router
+    
+    # Crear tablas automáticamente al iniciar la aplicación
+    @app.on_event("startup")
+    def on_startup():
+        log.info("🚀 Iniciando API de Alumnos...")
+        log.info("📊 Inicializando tablas de base de datos...")
+        create_db_and_tables()
+        log.info("✅ Tablas inicializadas correctamente")
+    
+    return app
+
+# Imprescindible para uvicorn alumnos_api.main:app
+app = create_app()
+
+# ✅ Versión corregida del custom_openapi
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=settings.app_name,
+        version=settings.version,
+        description="API CRUD protegida con JWT",
+        routes=app.routes,
+    )
+
+    # Declaramos el esquema de seguridad para JWT
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+
+    # ✅ Eliminamos el bucle que añadía seguridad global a todos los endpoints
+    # De esta manera, solo los endpoints que usen Depends(JWTBearer())
+    # se mostrarán con candado 🔒 en Swagger UI
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("alumnos_api.main:app", host="0.0.0.0", port=8000, reload=True)
+
+```
+
+alumnos_api/repositories/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/repositories/alumnos_repo.py
+-----
+```python
+from typing import List, Optional
+from sqlmodel import Session, select, desc
+from fastapi import HTTPException
+from ..schemas.alumno import Alumno, AlumnoIn
+from ..services.alumnos_service import calcular_promedio
+
+def listar(session: Session) -> List[Alumno]:
+    """Listar todos los alumnos ordenados por ID descendente"""
+    statement = select(Alumno).order_by(desc(Alumno.id))
+    return session.exec(statement).all()
+
+def obtener(session: Session, alumno_id: int) -> Alumno:
+    """Obtener un alumno por ID"""
+    alumno = session.get(Alumno, alumno_id)
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+    return alumno
+
+def crear(session: Session, data: AlumnoIn) -> Alumno:
+    """Crear un nuevo alumno"""
+    promedio = calcular_promedio(data.nota1, data.nota2, data.nota3, data.notaFinal)
+    
+    # Crear instancia del modelo
+    alumno = Alumno(
+        nombre=data.nombre,
+        nota1=data.nota1,
+        nota2=data.nota2,
+        nota3=data.nota3,
+        notaFinal=data.notaFinal,
+        promedioFinal=promedio
+    )
+    
+    session.add(alumno)
+    session.commit()
+    session.refresh(alumno)
+    return alumno
+
+def actualizar(session: Session, alumno_id: int, data: AlumnoIn) -> Alumno:
+    """Actualizar un alumno existente"""
+    alumno = obtener(session, alumno_id)  # Verificar que existe
+    
+    promedio = calcular_promedio(data.nota1, data.nota2, data.nota3, data.notaFinal)
+    
+    # Actualizar campos
+    alumno.nombre = data.nombre
+    alumno.nota1 = data.nota1
+    alumno.nota2 = data.nota2
+    alumno.nota3 = data.nota3
+    alumno.notaFinal = data.notaFinal
+    alumno.promedioFinal = promedio
+    
+    session.add(alumno)
+    session.commit()
+    session.refresh(alumno)
+    return alumno
+
+def eliminar(session: Session, alumno_id: int) -> bool:
+    """Eliminar un alumno"""
+    alumno = obtener(session, alumno_id)  # Verificar que existe
+    
+    session.delete(alumno)
+    session.commit()
+    return True
+
+```
+
+alumnos_api/schemas/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/schemas/alumno.py
+-----
+```python
+from typing import Optional
+from sqlmodel import SQLModel, Field
+from pydantic import validator
+
+def _nota_field():
+    return Field(..., ge=0.0, le=10.0, description="Rango 0.0 a 10.0")
+
+# Modelo base para la tabla
+class AlumnoBase(SQLModel):
+    nombre: str = Field(..., min_length=1, max_length=100)
+    nota1: float = _nota_field()
+    nota2: float = _nota_field()
+    nota3: float = _nota_field()
+    notaFinal: float = _nota_field()
+
+    @validator("nombre")
+    def limpiar_nombre(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("El nombre no puede estar vacío.")
+        return v
+
+# Modelo para la tabla de base de datos
+class Alumno(AlumnoBase, table=True):
+    __tablename__ = "alumnos"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    promedioFinal: float = Field(...)
+
+# Modelo para input (sin ID ni promedio, se calculan automáticamente)
+class AlumnoIn(AlumnoBase):
+    pass
+
+# Modelo para output (con ID y promedio calculado)
+class AlumnoOut(AlumnoBase):
+    id: int
+    promedioFinal: float
+
+```
+
+alumnos_api/services/__init__.py
+-----
+```python
+
+```
+
+alumnos_api/services/alumnos_service.py
+-----
+```python
+def calcular_promedio(n1: float, n2: float, n3: float, examen: float) -> float:
+    continua = (n1 + n2 + n3) / 3.0
+    return round(continua * 0.7 + examen * 0.3, 2)
+
+```
+
+recolector_fuentes.py
+-----
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Recolector de fuentes para empaquetar el contexto de un proyecto
+en uno o varios documentos de texto listos para pegar en ChatGPT.
+
+Características:
+- Recorre el workspace y concatena archivos de texto en bloques con fences Markdown por lenguaje.
+- Filtra binarios por extensión y heurística.
+- Excluye directorios y nombres ruidosos/sensibles por defecto (desactivable).
+- Límite máximo por archivo (--max-bytes).
+- Particiona la salida en chunks (--chunk-bytes) para ajustarse a límites de prompt.
+- Índice global (árbol, lista de rutas y mapeo archivo→chunk) en el primer chunk.
+- Ordena por relevancia para que los archivos más útiles aparezcan primero.
+- Opciones finas de include/exclude por patrón y extensión.
+"""
+
+from __future__ import annotations
+import argparse
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Iterable, List, Dict, Tuple, Optional, Set
+import fnmatch
+from datetime import datetime
+
+# =========================
+# Configuración por defecto
+# =========================
+
+DEFAULT_IGNORED_DIRS = {
+    ".git", ".svn", ".hg", ".idea", ".vscode",
+    "node_modules", "dist", "build", "out", "target",
+    "__pycache__", ".mypy_cache", ".pytest_cache", ".tox",
+    ".venv", "venv", ".next", ".turbo", ".parcel-cache",
+    "coverage", ".gradle", ".DS_Store"
+}
+
+DEFAULT_EXCLUDED_NAMES = {
+    ".env", ".env.local", ".env.production", ".env.development",
+}
+DEFAULT_EXCLUDED_EXTS = {".log", ".lock"}
+
+BINARY_EXTS = {
+    # Imágenes y medios
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tiff", ".ico",
+    ".mp3", ".wav", ".flac", ".ogg", ".m4a", ".mp4", ".mkv", ".avi", ".mov", ".webm",
+    ".pdf", ".zip", ".rar", ".7z", ".tar", ".gz", ".xz", ".bz2",
+    ".woff", ".woff2", ".ttf", ".eot", ".otf",
+    ".psd", ".ai", ".sketch", ".fig",
+    # Otros binarios comunes
+    ".exe", ".dll", ".so", ".dylib", ".bin", ".o", ".a", ".class", ".jar",
+    ".wasm",
+    # Snapshots y dumps
+    ".snap", ".dump"
+}
+
+# Heurística: bytes de control permitidos en texto
+_TEXT_WHITELIST = {9, 10, 13}  # tab, \n, \r
+
+# Mapeo de extensión → lenguaje de fence
+LANG_BY_EXT = {
+    ".py": "python",
+    ".js": "javascript",
+    ".ts": "typescript",
+    ".tsx": "tsx",
+    ".jsx": "jsx",
+    ".json": "json",
+    ".yml": "yaml",
+    ".yaml": "yaml",
+    ".toml": "toml",
+    ".ini": "ini",
+    ".conf": "ini",
+    ".env": "",
+    ".md": "markdown",
+    ".rst": "rst",
+    ".html": "html",
+    ".htm": "html",
+    ".css": "css",
+    ".scss": "scss",
+    ".sass": "sass",
+    ".less": "less",
+    ".sql": "sql",
+    ".sh": "bash",
+    ".bat": "bat",
+    ".ps1": "powershell",
+    ".dockerfile": "dockerfile",
+    "dockerfile": "dockerfile",
+    ".gradle": "groovy",
+    ".groovy": "groovy",
+    ".kt": "kotlin",
+    ".java": "java",
+    ".c": "c",
+    ".h": "c",
+    ".cpp": "cpp",
+    ".hpp": "cpp",
+    ".cs": "csharp",
+    ".go": "go",
+    ".rs": "rust",
+    ".rb": "ruby",
+    ".php": "php",
+    ".xml": "xml",
+    ".vue": "vue",
+}
+
+RELEVANCE_DIR_HINTS = (
+    "src/", "app/", "apps/", "backend/", "server/", "api/",
+    "frontend/", "client/", "lib/", "core/", "services/", "packages/"
+)
+RELEVANCE_TOP_FILES = (
+    "requirements.txt", "pyproject.toml", "poetry.lock",
+    "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock",
+    ".env.example", ".tool-versions",
+    "Dockerfile", "docker-compose.yml", "compose.yml", ".dockerignore",
+    "Makefile", "README.md", "README.MD", "readme.md"
+)
+RELEVANCE_EXT_PRIORITY = (".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml", ".md", ".html", ".css")
+
+# =========================
+# Utilidades
+# =========================
+
+def human_bytes(n: int) -> str:
+    units = ["B", "KB", "MB", "GB"]
+    size = float(n)
+    for u in units:
+        if size < 1024.0 or u == units[-1]:
+            return f"{size:.1f} {u}"
+        size /= 1024.0
+    return f"{n} B"
+
+def is_probably_binary(data: bytes) -> bool:
+    if not data:
+        return False
+    if b"\x00" in data:
+        return True
+    ctrl = sum(1 for b in data if b < 32 and b not in _TEXT_WHITELIST)
+    return (ctrl / len(data)) > 0.30
+
+def get_lang_for_path(path: Path) -> str:
+    name = path.name.lower()
+    if name == "dockerfile" or name.endswith(".dockerfile"):
+        return "dockerfile"
+    ext = path.suffix.lower()
+    return LANG_BY_EXT.get(ext, "")
+
+def now_iso() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def print_progress(prefix: str, current: int, total: int, width: int = 30) -> None:
+    total = max(total, 1)
+    filled = int(width * current / total)
+    bar = "█" * filled + "─" * (width - filled)
+    end = "\n" if current >= total else "\r"
+    sys.stdout.write(f"{prefix} [{bar}] {current}/{total}")
+    sys.stdout.write(end)
+    sys.stdout.flush()
+
+def build_tree(paths: List[Path], root: Path) -> str:
+    sep = os.sep
+    root_parts = len(root.parts)
+    nodes: Dict[str, Set[str]] = {}
+
+    for p in paths:
+        parts = p.parts[root_parts:]
+        for i in range(len(parts)):
+            parent = sep.join(parts[:i])
+            child = parts[i]
+            nodes.setdefault(parent, set()).add(child)
+
+    def walk(prefix: str = "", parent_key: str = "") -> List[str]:
+        entries = sorted(nodes.get(parent_key, []), key=lambda s: (not s.endswith("/"), s.lower()))
+        lines: List[str] = []
+        for idx, entry in enumerate(entries):
+            is_last = idx == len(entries) - 1
+            connector = "└── " if is_last else "├── "
+            path_key = f"{parent_key}{sep}{entry}" if parent_key else entry
+            has_children = any(k.startswith(path_key + sep) for k in nodes.keys())
+            lines.append(prefix + connector + entry)
+            if has_children:
+                extension = "    " if is_last else "│   "
+                lines.extend(walk(prefix + extension, path_key))
+        return lines
+
+    return "\n".join(walk())
+
+def match_any_patterns(rel: str, patterns: List[str]) -> bool:
+    return any(fnmatch.fnmatch(rel, pat.strip()) for pat in patterns if pat.strip())
+
+def normalize_exts(csv: Optional[str]) -> Set[str]:
+    if not csv:
+        return set()
+    exts = set()
+    for e in csv.split(","):
+        s = e.strip()
+        if not s:
+            continue
+        if not s.startswith("."):
+            s = "." + s
+        exts.add(s.lower())
+    return exts
+
+def split_csv(s: Optional[str]) -> List[str]:
+    if not s:
+        return []
+    return [x.strip() for x in s.split(",") if x.strip()]
+
+# =========================
+# Proceso principal
+# =========================
+
+class FileRecord:
+    def __init__(self, rel: Path, lang: str, content: str, block_size: int):
+        self.rel = rel
+        self.lang = lang
+        self.content = content
+        self.block_size = block_size
+        self.chunk_no: int = 1  # se asigna luego
+
+def collect_candidates(
+    root: Path,
+    ignored_dirs: Set[str],
+    exclude_patterns: List[str],
+    include_ext: Set[str],
+    exclude_ext: Set[str],
+    use_default_excludes: bool,
+    max_bytes: int,
+) -> Tuple[List[Path], Dict[str, List[str]]]:
+    included: List[Path] = []
+    omitted: Dict[str, List[str]] = {
+        "excluded_dir": [],
+        "excluded_pattern": [],
+        "excluded_name_or_ext": [],
+        "binary_ext": [],
+        "binary_heuristic": [],
+        "too_large": [],
+        "read_error": [],
+    }
+
+    default_names = DEFAULT_EXCLUDED_NAMES if use_default_excludes else set()
+    default_exts = DEFAULT_EXCLUDED_EXTS if use_default_excludes else set()
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in ignored_dirs]
+
+        for name in filenames:
+            abs_path = Path(dirpath) / name
+            rel = abs_path.relative_to(root)
+            rel_str = rel.as_posix()
+
+            if exclude_patterns and match_any_patterns(rel_str, exclude_patterns):
+                omitted["excluded_pattern"].append(rel_str)
+                continue
+
+            if use_default_excludes and (name in default_names or abs_path.suffix.lower() in default_exts):
+                omitted["excluded_name_or_ext"].append(rel_str)
+                continue
+
+            ext = abs_path.suffix.lower()
+            if exclude_ext and ext in exclude_ext:
+                omitted["excluded_name_or_ext"].append(rel_str)
+                continue
+
+            if (ext in BINARY_EXTS) and (ext not in include_ext):
+                omitted["binary_ext"].append(rel_str)
+                continue
+
+            try:
+                size = abs_path.stat().st_size
+            except Exception:
+                omitted["read_error"].append(rel_str)
+                continue
+            if max_bytes > 0 and size > max_bytes:
+                omitted["too_large"].append(f"{rel_str} ({human_bytes(size)})")
+                continue
+
+            try:
+                with open(abs_path, "rb") as fh:
+                    head = fh.read(8192)
+                if is_probably_binary(head) and (ext not in include_ext):
+                    omitted["binary_heuristic"].append(rel_str)
+                    continue
+            except Exception:
+                omitted["read_error"].append(rel_str)
+                continue
+
+            included.append(rel)
+
+    return included, omitted
+
+def read_text_safe(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="strict")
+    except Exception:
+        return path.read_text(encoding="latin-1", errors="replace")
+
+def relevance_key(rel: Path) -> Tuple[int, int, int, str]:
+    rel_str = rel.as_posix().lower()
+    top = 0 if any(rel.name == t for t in RELEVANCE_TOP_FILES) else 1
+    dir_hint = 0 if any(rel_str.startswith(h) for h in RELEVANCE_DIR_HINTS) else 1
+    ext_rank = next((i for i, e in enumerate(RELEVANCE_EXT_PRIORITY) if rel.suffix.lower() == e), 999)
+    return (top, dir_hint, ext_rank, rel_str)
+
+def build_blocks(
+    root: Path,
+    rel_paths: List[Path],
+    header_line: str,
+    max_bytes: int,
+) -> Tuple[List[FileRecord], Dict[str, List[str]]]:
+    extra_omitted: Dict[str, List[str]] = {
+        "read_error": [],
+        "too_large": [],
+    }
+    records: List[FileRecord] = []
+    total = len(rel_paths)
+    for i, rel in enumerate(rel_paths, 1):
+        print_progress("Leyendo archivos", i, total)
+        abs_path = root / rel
+        try:
+            if max_bytes > 0 and abs_path.stat().st_size > max_bytes:
+                extra_omitted["too_large"].append(rel.as_posix())
+                continue
+            lang = get_lang_for_path(rel)
+            content = read_text_safe(abs_path)
+            block = f"{rel.as_posix()}\n{header_line}\n```{lang}\n{content}\n```\n\n"
+            records.append(FileRecord(rel, lang, content, len(block)))
+        except Exception:
+            extra_omitted["read_error"].append(rel.as_posix())
+
+    return records, extra_omitted
+
+def assign_chunks(records: List[FileRecord], chunk_bytes: int) -> int:
+    if chunk_bytes <= 0:
+        for r in records:
+            r.chunk_no = 1
+        return 1
+
+    current = 1
+    acc = 0
+    for r in records:
+        if r.block_size > chunk_bytes and acc == 0:
+            r.chunk_no = current
+            current += 1
+            acc = 0
+            continue
+
+        if acc + r.block_size > chunk_bytes:
+            current += 1
+            acc = 0
+        r.chunk_no = current
+        acc += r.block_size
+    return current
+
+def write_outputs(
+    root: Path,
+    output: Path,
+    header_line: str,
+    records: List[FileRecord],
+    total_chunks: int,
+    included_paths: List[Path],
+    omitted: Dict[str, List[str]],
+) -> None:
+    def out_path_for(i: int) -> Path:
+        if total_chunks == 1:
+            return output
+        return output.with_name(f"{output.stem}_{i:03d}{output.suffix}")
+
+    tree_text = build_tree(included_paths, root) if included_paths else "(sin archivos incluidos)"
+    file_to_chunk: List[Tuple[int, str]] = sorted(
+        [(r.chunk_no, r.rel.as_posix()) for r in records],
+        key=lambda t: (t[0], t[1].lower())
+    )
+
+    for chunk_no in range(1, total_chunks + 1):
+        outp = out_path_for(chunk_no)
+        outp.parent.mkdir(parents=True, exist_ok=True)
+        with open(outp, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("# Recolector de fuentes\n\n")
+            fh.write(f"- Fecha de generación: {now_iso()}\n")
+            fh.write(f"- Raíz: `{root.resolve().as_posix()}`\n")
+            fh.write(f"- Archivo de salida: `{outp.name}` (chunk {chunk_no}/{total_chunks})\n")
+            fh.write("\n")
+
+            if chunk_no == 1:
+                fh.write("## Árbol de archivos incluidos\n\n")
+                fh.write("```text\n")
+                fh.write(tree_text)
+                fh.write("\n```\n\n")
+
+                fh.write("## Índice global (archivo → chunk)\n\n")
+                for cn, p in file_to_chunk:
+                    fh.write(f"- [{cn:03d}] {p}\n")
+                fh.write("\n")
+
+                fh.write("## Archivos omitidos (razones)\n\n")
+                any_omitted = any(omitted.get(k) for k in omitted.keys())
+                if not any_omitted:
+                    fh.write("_No se omitieron archivos._\n\n")
+                else:
+                    for reason, items in omitted.items():
+                        if not items:
+                            continue
+                        fh.write(f"### {reason}\n")
+                        for it in items:
+                            fh.write(f"- {it}\n")
+                        fh.write("\n")
+                fh.write("---\n\n")
+
+            chunk_records = [r for r in records if r.chunk_no == chunk_no]
+            total = len(chunk_records)
+            for i, r in enumerate(chunk_records, 1):
+                print_progress(f"Escribiendo chunk {chunk_no}/{total_chunks}", i, total)
+                block = f"{r.rel.as_posix()}\n{header_line}\n```{r.lang}\n{r.content}\n```\n\n"
+                fh.write(block)
+
+        print(f"\n✅ Escrito: {outp}")
+
+# =========================
+# CLI
+# =========================
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Recolector de fuentes: concatena archivos de texto del proyecto en uno o varios .txt con fences por lenguaje."
+    )
+    p.add_argument("-r", "--root", default=".", help="Directorio raíz del proyecto (por defecto, .)")
+    p.add_argument("-o", "--output", default="repositorio.txt", help="Ruta de salida (por defecto, repositorio.txt)")
+    p.add_argument("--exclude", default="", help="Patrones glob separados por coma para excluir (ej: 'tests/screenshots,**/*.snap')")
+    p.add_argument("--include-ext", default="", help="Extensiones a FORZAR inclusión (csv, con . o sin .; ej: '.py,.md')")
+    p.add_argument("--exclude-ext", default="", help="Extensiones a excluir explícitamente (csv)")
+    p.add_argument("--ignored-dirs", default="", help="Directorios adicionales a ignorar (csv)")
+    p.add_argument("--no-default-excludes", action="store_true", help="No aplicar exclusiones por defecto (.env, *.log, etc.)")
+    p.add_argument("--max-bytes", type=int, default=2 * 1024 * 1024, help="Tamaño máximo por archivo (bytes). 0 para ilimitado. Por defecto 2MB")
+    p.add_argument("--chunk-bytes", type=int, default=0, help="Tamaño máximo por archivo de salida (bytes). 0 para un solo fichero.")
+    # ✔️ robusto: acepta --header-line SIN valor (usa '-----'), o con valor
+    p.add_argument("--header-line", "--header", "-H",
+                   nargs="?", const="-----", default="-----",
+                   help="Separador entre ruta y contenido. Si se pasa sin valor, usa '-----' (por defecto).")
+    return p.parse_args()
+
+def main() -> None:
+    args = parse_args()
+    t0 = time.time()
+
+    root = Path(args.root).resolve()
+    output = Path(args.output)
+
+    if not root.exists() or not root.is_dir():
+        print(f"Error: raíz inválida: {root}", file=sys.stderr)
+        sys.exit(1)
+
+    ignored_dirs = set(DEFAULT_IGNORED_DIRS)
+    if args.ignored_dirs:
+        ignored_dirs |= set([d.strip() for d in args.ignored_dirs.split(",") if d.strip()])
+
+    exclude_patterns = split_csv(args.exclude)
+    include_ext = normalize_exts(args.include_ext)
+    exclude_ext = normalize_exts(args.exclude_ext)
+    use_default_excludes = not args.no_default_excludes
+
+    print("🔎 Escaneando workspace...")
+    included_paths, omitted = collect_candidates(
+        root=root,
+        ignored_dirs=ignored_dirs,
+        exclude_patterns=exclude_patterns,
+        include_ext=include_ext,
+        exclude_ext=exclude_ext,
+        use_default_excludes=use_default_excludes,
+        max_bytes=args.max_bytes,
+    )
+
+    included_paths.sort(key=relevance_key)
+
+    records, extra_omitted = build_blocks(
+        root=root,
+        rel_paths=included_paths,
+        header_line=args.header_line,
+        max_bytes=args.max_bytes,
+    )
+    for k, v in extra_omitted.items():
+        omitted.setdefault(k, []).extend(v)
+
+    total_chunks = assign_chunks(records, args.chunk_bytes)
+
+    write_outputs(
+        root=root,
+        output=output,
+        header_line=args.header_line,
+        records=records,
+        total_chunks=total_chunks,
+        included_paths=included_paths,
+        omitted=omitted,
+    )
+
+    dt = time.time() - t0
+    total_files = len(records)
+    total_size = sum(r.block_size for r in records)
+    print("\nResumen:")
+    print(f"- Archivos incluidos: {total_files}")
+    print(f"- Tamaño total (bloques): {human_bytes(total_size)}")
+    print(f"- Chunks generados: {total_chunks}")
+    print(f"- Tiempo: {dt:.2f} s")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+test_migration.py
+-----
+```python
+"""
+Script de test para verificar la migración a SQLModel
+"""
+import sys
+import os
+
+# Agregar el directorio raíz al path para importar módulos
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from alumnos_api.core.db import engine, create_db_and_tables
+from alumnos_api.schemas.alumno import Alumno, AlumnoIn
+from sqlmodel import Session
+
+def test_sqlmodel_migration():
+    """Test básico para verificar que SQLModel funciona correctamente"""
+    
+    print("🧪 Iniciando test de migración a SQLModel...")
+    
+    # 1. Crear tablas
+    print("📊 Creando tablas...")
+    create_db_and_tables()
+    print("✅ Tablas creadas exitosamente")
+    
+    # 2. Test de inserción
+    print("📝 Insertando alumno de prueba...")
+    alumno_data = AlumnoIn(
+        nombre="Juan Test",
+        nota1=8.5,
+        nota2=9.0,
+        nota3=8.0,
+        notaFinal=9.2
+    )
+    
+    with Session(engine) as session:
+        # Crear alumno
+        promedio = ((alumno_data.nota1 + alumno_data.nota2 + alumno_data.nota3) / 3.0) * 0.7 + alumno_data.notaFinal * 0.3
+        
+        alumno = Alumno(
+            nombre=alumno_data.nombre,
+            nota1=alumno_data.nota1,
+            nota2=alumno_data.nota2,
+            nota3=alumno_data.nota3,
+            notaFinal=alumno_data.notaFinal,
+            promedioFinal=promedio
+        )
+        
+        session.add(alumno)
+        session.commit()
+        session.refresh(alumno)
+        
+        print(f"✅ Alumno creado con ID: {alumno.id}")
+        print(f"📊 Promedio calculado: {alumno.promedioFinal}")
+    
+    # 3. Test de consulta
+    print("🔍 Consultando alumnos...")
+    with Session(engine) as session:
+        from sqlmodel import select
+        statement = select(Alumno)
+        alumnos = session.exec(statement).all()
+        print(f"✅ Encontrados {len(alumnos)} alumnos en la base de datos")
+        
+        for alumno in alumnos:
+            print(f"   - {alumno.nombre}: {alumno.promedioFinal}")
+    
+    print("🎉 ¡Migración a SQLModel completada exitosamente!")
+
+if __name__ == "__main__":
+    test_sqlmodel_migration()
+```
+
+tests/test_alumnos.py
+-----
+```python
+
+```
+
+MIGRATION_SUMMARY.md
+-----
+```markdown
+# 🎉 Migración a SQLModel Completada
+
+## ✅ Cambios Realizados
+
+### 1. **Dependencias Actualizadas**
+- ➕ Agregado `sqlmodel==0.0.21`
+- ➕ Agregado `sqlalchemy==2.0.32`
+- 🔄 Actualizado `pymysql[rsa]==1.1.2`
+
+### 2. **Schemas Refactorizados** (`alumnos_api/schemas/alumno.py`)
+- 🔄 Convertido de Pydantic puro a SQLModel
+- ➕ Nuevo modelo `Alumno` para la tabla de BD
+- ➕ Modelo base `AlumnoBase` compartido
+- ✅ Mantenidas validaciones existentes
+
+### 3. **Base de Datos Modernizada** (`alumnos_api/core/db.py`)
+- 🔄 Reemplazado PyMySQL directo por SQLAlchemy Engine
+- ➕ Connection pooling automático
+- ➕ Función `get_session()` para dependency injection
+- ✅ Función legacy `get_connection()` mantenida para compatibilidad
+
+### 4. **Repositorio con ORM** (`alumnos_api/repositories/alumnos_repo.py`)
+- 🔄 Eliminado SQL crudo, reemplazado por SQLModel queries
+- ➕ Type-safe queries con `select()`
+- ➕ Mejor manejo de errores y transacciones
+- ✅ Lógica de negocio mantenida
+
+### 5. **Dependency Injection** (`alumnos_api/deps.py`)
+- ➕ Implementado `SessionDep` para inyección de sesiones
+- ➕ Type hints mejorados con `Annotated`
+
+### 6. **Routers Modernizados**
+- 🔄 Endpoints usando dependency injection
+- ➕ Type hints más específicos
+- ✅ Misma API pública mantenida
+
+### 7. **Auto-inicialización** (`alumnos_api/main.py`)
+- ➕ Creación automática de tablas al arrancar
+- ➕ Logging mejorado del proceso de inicialización
+
+### 8. **Archivo de Configuración**
+- ➕ `.env.example` para nuevos usuarios
+- ✅ `.env` existente respetado
+
+---
+
+## 🚀 Ventajas de SQLModel
+
+### ✨ **Type Safety**
+```python
+# Antes (diccionarios sin tipos)
+def crear(conn, data) -> Dict[str, Any]:
+    ...
+
+# Ahora (modelos tipados)
+def crear(session: Session, data: AlumnoIn) -> Alumno:
+    ...
+```
+
+### 💉 **Dependency Injection**
+```python
+# Antes (manejo manual de conexiones)
+@router.get("")
+def listar():
+    conn = get_connection()
+    try:
+        return repo.listar(conn)
+    finally:
+        conn.close()
+
+# Ahora (inyección automática)
+@router.get("", response_model=List[AlumnoOut])
+def listar(session: SessionDep):
+    return repo.listar(session)
+```
+
+### 🔄 **Queries Type-Safe**
+```python
+# Antes (SQL crudo)
+cur.execute("SELECT * FROM alumnos ORDER BY id DESC")
+
+# Ahora (SQLModel query)
+statement = select(Alumno).order_by(desc(Alumno.id))
+```
+
+### 🛠️ **Auto Schema Management**
+- Creación automática de tablas
+- Validación de estructura
+- Migrations futuras más fáciles
+
+---
+
+## 🧪 Verificación
+
+✅ API iniciada correctamente  
+✅ Tablas creadas automáticamente  
+✅ Logging funcionando  
+✅ Health checks operativos  
+✅ Endpoints CRUD disponibles  
+
+## 📋 Próximos Pasos Recomendados
+
+1. **Crear tests unitarios** usando SQLModel
+2. **Implementar migrations** para cambios futuros de esquema
+3. **Añadir más validaciones** en los modelos
+4. **Optimizar queries** con eager loading si es necesario
+5. **Configurar logging avanzado** con structured logs
+
+---
+
+## 🔗 Enlaces Útiles
+
+- [SQLModel Documentation](https://sqlmodel.tiangolo.com/)
+- [FastAPI + SQLModel Tutorial](https://fastapi.tiangolo.com/tutorial/sql-databases/)
+- [SQLAlchemy 2.0 Docs](https://docs.sqlalchemy.org/en/20/)
+
+---
+
+**🎊 ¡Migración completada exitosamente! Tu API ahora usa SQLModel como ORM.**
+```
+
+.gitignore
+-----
+```
+# Entornos virtuales
+.venv/
+venv/
+
+# Cachés y bytecode de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Variables de entorno y archivos locales
+.env
+*.log
+.DS_Store
+
+# Paquetes/artefactos de build
+build/
+dist/
+*.egg-info/
+
+# Configuraciones de IDE/Editor
+.vscode/
+.idea/
+
+```
+
+0.30
+-----
+```
+
+```
+
+argparse.Namespace
+-----
+```
+
+```
+
+bool
+-----
+```
+
+```
+
+init_estructura.bat
+-----
+```bat
+@echo off
+REM === Crear carpetas base ===
+mkdir app 2>nul
+mkdir app\api\routers 2>nul
+mkdir app\core 2>nul
+mkdir app\repositories 2>nul
+mkdir app\services 2>nul
+mkdir app\schemas 2>nul
+mkdir tests 2>nul
+
+REM === Crear archivos vacíos si no existen ===
+type NUL > app\api\__init__.py
+type NUL > app\api\routers\__init__.py
+type NUL > app\core\__init__.py
+type NUL > app\repositories\__init__.py
+type NUL > app\services\__init__.py
+type NUL > app\schemas\__init__.py
+type NUL > app\deps.py
+type NUL > app\main.py
+type NUL > app\core\config.py
+type NUL > app\core\db.py
+type NUL > app\core\logging.py
+type NUL > app\api\routers\health.py
+type NUL > app\api\routers\alumnos.py
+type NUL > app\schemas\alumno.py
+type NUL > app\services\alumnos_service.py
+type NUL > app\repositories\alumnos_repo.py
+type NUL > tests\test_alumnos.py
+echo Estructura creada.
+
+```
+
+int
+-----
+```
+
+```
+
+List[str]
+-----
+```
+
+```
+
+None
+-----
+```
+
+```
+
+Path
+-----
+```
+
+```
+
+repositorio.txt
+-----
+```
+# Repositorio de fuentes
+# Raíz: D:\ILERNA\2025-2026\CMO Programacion_en_Python\api-alumnos-basico\fastapi-api-alumnos-basico
+# Archivos incluidos: 39
+
+.env.example
+----------------------------------------------------------------
+# Configuración de Base de Datos MySQL
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=crud_alumnos
+
+# Configuración CORS (opcional)
+# ALLOWED_ORIGINS=["http://localhost:3000","http://localhost:5173","http://localhost:8080"]
+
+.gitignore
+----------------------------------------------------------------
+# Entornos virtuales
+.venv/
+venv/
+
+# Cachés y bytecode de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Variables de entorno y archivos locales
+.env
+*.log
+.DS_Store
+
+# Paquetes/artefactos de build
+build/
+dist/
+*.egg-info/
+
+# Configuraciones de IDE/Editor
+.vscode/
+.idea/
+
+0.30
+----------------------------------------------------------------
+
+
+alumnos_api\api\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\api\routers\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\api\routers\alumnos.py
+----------------------------------------------------------------
+from typing import List
+from fastapi import APIRouter, Depends
+from ...deps import SessionDep
+from ...schemas.alumno import AlumnoIn, AlumnoOut
+from ...repositories import alumnos_repo as repo
+from ...core.security import JWTBearer
+
+router = APIRouter(prefix="/alumnos", tags=["alumnos"])
+
+@router.get("", response_model=List[AlumnoOut])
+def listar(session: SessionDep):
+    """Listar todos los alumnos"""
+    return repo.listar(session)
+
+@router.get("/{alumno_id}", response_model=AlumnoOut)
+def obtener(alumno_id: int, session: SessionDep):
+    """Obtener un alumno por ID"""
+    return repo.obtener(session, alumno_id)
+
+@router.post("", response_model=AlumnoOut, status_code=201)
+def crear(
+    data: AlumnoIn,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Crear un nuevo alumno (protegido con JWT)"""
+    return repo.crear(session, data)
+
+@router.put("/{alumno_id}", response_model=AlumnoOut)
+def actualizar(
+    alumno_id: int,
+    data: AlumnoIn,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Actualizar un alumno existente (protegido con JWT)"""
+    return repo.actualizar(session, alumno_id, data)
+
+@router.delete("/{alumno_id}")
+def eliminar(
+    alumno_id: int,
+    session: SessionDep,
+    current_user: str = Depends(JWTBearer())  # 👈 Verifica token
+):
+    """Eliminar un alumno (protegido con JWT)"""
+    repo.eliminar(session, alumno_id)
+    return {"deleted": True, "id": alumno_id}
+
+alumnos_api\api\routers\auth.py
+----------------------------------------------------------------
+# alumnos_api/api/routers/auth.py
+
+from fastapi import APIRouter, HTTPException, status, Depends
+from pydantic import BaseModel
+from jose import jwt
+from datetime import datetime, timedelta
+
+from alumnos_api.core.config import settings
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Usuario hardcodeado (por ahora, en memoria)
+USER_DB = {
+    "admin": {
+        "username": "admin",
+        "password": "admin123",  # para pruebas (en producción usar hash)
+    }
+}
+
+# Secretos y expiración
+JWT_SECRET = "supersecreto123"  # En producción ponerlo en .env
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_MINUTES = 60
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+@router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest):
+    user = USER_DB.get(data.username)
+    if not user or data.password != user["password"]:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    expire = datetime.utcnow() + timedelta(minutes=JWT_EXPIRE_MINUTES)
+    payload = {
+        "sub": data.username,
+        "exp": expire
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return {"access_token": token}
+
+alumnos_api\api\routers\health.py
+----------------------------------------------------------------
+from fastapi import APIRouter
+from sqlmodel import text
+from ...deps import SessionDep
+
+router = APIRouter(prefix="/health", tags=["health"])
+
+@router.get("/")
+def root():
+    """Health check básico de la API"""
+    return {"api": "OK"}
+
+@router.get("/db")
+def db(session: SessionDep):
+    """Health check de la base de datos usando SQLModel"""
+    try:
+        result = session.exec(text("SELECT 1 AS ok")).first()
+        return {"db": "up" if result and result[0] == 1 else "unknown"}
+    except Exception as e:
+        return {"db": "down", "error": str(e)}
+
+alumnos_api\core\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\core\config.py
+----------------------------------------------------------------
+# alumnos_api/core/config.py
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+
+class Settings(BaseSettings):
+    app_name: str = "API CRUD Alumnos"
+    version: str = "2.0.0"
+
+    db_host: str
+    db_port: int = 3306
+    db_user: str
+    db_password: str
+    db_name: str
+
+    # Valor por defecto (sirve si no defines ALLOWED_ORIGINS en .env)
+    allowed_origins: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5500",
+    ]
+
+    # ✅ Acepta JSON o CSV en .env (pydantic v2)
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            s = v.strip()
+            if not s:
+                return []
+            if s.startswith("["):   # JSON válido
+                return s
+            # CSV simple: "http://a:3000,http://b:5173"
+            return [x.strip() for x in s.split(",") if x.strip()]
+        return v
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+settings = Settings()  # type: ignore[call-arg]
+
+alumnos_api\core\db.py
+----------------------------------------------------------------
+from sqlmodel import SQLModel, create_engine, Session
+from fastapi import HTTPException
+from .config import settings
+
+# Crear el engine de SQLAlchemy
+DATABASE_URL = (
+    f"mysql+pymysql://{settings.db_user}:{settings.db_password}"
+    f"@{settings.db_host}:{settings.db_port}/{settings.db_name}"
+)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
+    pool_recycle=3600,
+    echo=False  # Cambia a True para debug SQL
+)
+
+def create_db_and_tables():
+    """Crear todas las tablas definidas en SQLModel"""
+    SQLModel.metadata.create_all(engine)
+
+def get_session():
+    """Dependency para obtener una sesión de base de datos"""
+    with Session(engine) as session:
+        try:
+            yield session
+        except HTTPException:
+            # ⚠️ Re-lanza directamente errores HTTP (por ejemplo, de autenticación JWT)
+            raise
+        except Exception as e:
+            session.rollback()
+            raise HTTPException(status_code=500, detail=f"Error de base de datos: {e}")
+        finally:
+            session.close()
+
+
+# Función legacy para compatibilidad (se puede remover después)
+def get_connection():
+    """Función de compatibilidad - usar get_session() en su lugar"""
+    import pymysql
+    from pymysql.cursors import DictCursor
+    try:
+        return pymysql.connect(
+            host=settings.db_host,
+            port=settings.db_port,
+            user=settings.db_user,
+            password=settings.db_password,
+            database=settings.db_name,
+            cursorclass=DictCursor,
+            charset="utf8mb4",
+            connect_timeout=5, read_timeout=5, write_timeout=5,
+            autocommit=False,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de conexión: {e}")
+
+alumnos_api\core\init_db.py
+----------------------------------------------------------------
+"""
+Script para inicializar la base de datos con SQLModel
+"""
+from sqlmodel import SQLModel
+from alumnos_api.core.db import engine
+from alumnos_api.schemas.alumno import Alumno  # Importar para registrar el modelo
+
+def init_db():
+    """
+    Crear todas las tablas en la base de datos
+    """
+    print("🔄 Creando tablas de base de datos...")
+    SQLModel.metadata.create_all(engine)
+    print("✅ Tablas creadas exitosamente!")
+
+def drop_db():
+    """
+    Eliminar todas las tablas de la base de datos
+    """
+    print("🗑️ Eliminando tablas de base de datos...")
+    SQLModel.metadata.drop_all(engine)
+    print("✅ Tablas eliminadas exitosamente!")
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "--drop":
+        drop_db()
+    else:
+        init_db()
+
+alumnos_api\core\logging.py
+----------------------------------------------------------------
+import logging
+
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+    return logging.getLogger("alumnos-api")
+
+alumnos_api\core\security.py
+----------------------------------------------------------------
+# alumnos_api/core/security.py
+
+from fastapi import Request, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt, JWTError
+from typing import Optional
+
+JWT_SECRET = "supersecreto123"  # ⚠️ Reemplaza esto por una variable de entorno en producción
+JWT_ALGORITHM = "HS256"
+
+class JWTBearer(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super().__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> str:
+        credentials: Optional[HTTPAuthorizationCredentials] = await super().__call__(request)
+        if not credentials or credentials.scheme != "Bearer":
+            raise HTTPException(status_code=403, detail="Token inválido")
+        return self.verify_token(credentials.credentials)
+
+    def verify_token(self, token: str) -> str:
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            username = payload.get("sub")
+            if not isinstance(username, str):
+                raise HTTPException(status_code=403, detail="Token sin usuario válido")
+            return username
+        except JWTError:
+            raise HTTPException(status_code=403, detail="Token inválido o expirado")
+
+alumnos_api\deps.py
+----------------------------------------------------------------
+"""
+Dependencias para FastAPI con SQLModel
+"""
+from typing import Annotated
+from fastapi import Depends
+from sqlmodel import Session
+from .core.db import get_session
+
+# Tipo anotado para la sesión de base de datos
+SessionDep = Annotated[Session, Depends(get_session)]
+
+# Función helper para usar en routers
+def get_db_session() -> Session:
+    """
+    Dependency function para obtener una sesión de base de datos.
+    Usar SessionDep en su lugar para type hints más limpios.
+    """
+    return Depends(get_session)
+
+alumnos_api\main.py
+----------------------------------------------------------------
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from alumnos_api.core.config import settings
+from alumnos_api.core.logging import setup_logging
+from alumnos_api.core.db import create_db_and_tables
+from alumnos_api.api.routers import alumnos, health
+from alumnos_api.api.routers import auth  # 👈 nuevo import
+from fastapi.openapi.utils import get_openapi
+
+log = setup_logging()
+
+def create_app() -> FastAPI:
+    app = FastAPI(title=settings.app_name, version=settings.version, debug=True)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(health.router)
+    app.include_router(alumnos.router)
+    app.include_router(auth.router)  # 👈 nuevo router
+    
+    # Crear tablas automáticamente al iniciar la aplicación
+    @app.on_event("startup")
+    def on_startup():
+        log.info("🚀 Iniciando API de Alumnos...")
+        log.info("📊 Inicializando tablas de base de datos...")
+        create_db_and_tables()
+        log.info("✅ Tablas inicializadas correctamente")
+    
+    return app
+
+# Imprescindible para uvicorn alumnos_api.main:app
+app = create_app()
+
+# ✅ Versión corregida del custom_openapi
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=settings.app_name,
+        version=settings.version,
+        description="API CRUD protegida con JWT",
+        routes=app.routes,
+    )
+
+    # Declaramos el esquema de seguridad para JWT
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+
+    # ✅ Eliminamos el bucle que añadía seguridad global a todos los endpoints
+    # De esta manera, solo los endpoints que usen Depends(JWTBearer())
+    # se mostrarán con candado 🔒 en Swagger UI
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("alumnos_api.main:app", host="0.0.0.0", port=8000, reload=True)
+
+alumnos_api\repositories\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\repositories\alumnos_repo.py
+----------------------------------------------------------------
+from typing import List, Optional
+from sqlmodel import Session, select, desc
+from fastapi import HTTPException
+from ..schemas.alumno import Alumno, AlumnoIn
+from ..services.alumnos_service import calcular_promedio
+
+def listar(session: Session) -> List[Alumno]:
+    """Listar todos los alumnos ordenados por ID descendente"""
+    statement = select(Alumno).order_by(desc(Alumno.id))
+    return session.exec(statement).all()
+
+def obtener(session: Session, alumno_id: int) -> Alumno:
+    """Obtener un alumno por ID"""
+    alumno = session.get(Alumno, alumno_id)
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+    return alumno
+
+def crear(session: Session, data: AlumnoIn) -> Alumno:
+    """Crear un nuevo alumno"""
+    promedio = calcular_promedio(data.nota1, data.nota2, data.nota3, data.notaFinal)
+    
+    # Crear instancia del modelo
+    alumno = Alumno(
+        nombre=data.nombre,
+        nota1=data.nota1,
+        nota2=data.nota2,
+        nota3=data.nota3,
+        notaFinal=data.notaFinal,
+        promedioFinal=promedio
+    )
+    
+    session.add(alumno)
+    session.commit()
+    session.refresh(alumno)
+    return alumno
+
+def actualizar(session: Session, alumno_id: int, data: AlumnoIn) -> Alumno:
+    """Actualizar un alumno existente"""
+    alumno = obtener(session, alumno_id)  # Verificar que existe
+    
+    promedio = calcular_promedio(data.nota1, data.nota2, data.nota3, data.notaFinal)
+    
+    # Actualizar campos
+    alumno.nombre = data.nombre
+    alumno.nota1 = data.nota1
+    alumno.nota2 = data.nota2
+    alumno.nota3 = data.nota3
+    alumno.notaFinal = data.notaFinal
+    alumno.promedioFinal = promedio
+    
+    session.add(alumno)
+    session.commit()
+    session.refresh(alumno)
+    return alumno
+
+def eliminar(session: Session, alumno_id: int) -> bool:
+    """Eliminar un alumno"""
+    alumno = obtener(session, alumno_id)  # Verificar que existe
+    
+    session.delete(alumno)
+    session.commit()
+    return True
+
+alumnos_api\schemas\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\schemas\alumno.py
+----------------------------------------------------------------
+from typing import Optional
+from sqlmodel import SQLModel, Field
+from pydantic import validator
+
+def _nota_field():
+    return Field(..., ge=0.0, le=10.0, description="Rango 0.0 a 10.0")
+
+# Modelo base para la tabla
+class AlumnoBase(SQLModel):
+    nombre: str = Field(..., min_length=1, max_length=100)
+    nota1: float = _nota_field()
+    nota2: float = _nota_field()
+    nota3: float = _nota_field()
+    notaFinal: float = _nota_field()
+
+    @validator("nombre")
+    def limpiar_nombre(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError("El nombre no puede estar vacío.")
+        return v
+
+# Modelo para la tabla de base de datos
+class Alumno(AlumnoBase, table=True):
+    __tablename__ = "alumnos"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    promedioFinal: float = Field(...)
+
+# Modelo para input (sin ID ni promedio, se calculan automáticamente)
+class AlumnoIn(AlumnoBase):
+    pass
+
+# Modelo para output (con ID y promedio calculado)
+class AlumnoOut(AlumnoBase):
+    id: int
+    promedioFinal: float
+
+alumnos_api\services\__init__.py
+----------------------------------------------------------------
+
+
+alumnos_api\services\alumnos_service.py
+----------------------------------------------------------------
+def calcular_promedio(n1: float, n2: float, n3: float, examen: float) -> float:
+    continua = (n1 + n2 + n3) / 3.0
+    return round(continua * 0.7 + examen * 0.3, 2)
+
+argparse.Namespace
+----------------------------------------------------------------
+
+
+bool
+----------------------------------------------------------------
+
+
+init_estructura.bat
+----------------------------------------------------------------
+@echo off
+REM === Crear carpetas base ===
+mkdir app 2>nul
+mkdir app\api\routers 2>nul
+mkdir app\core 2>nul
+mkdir app\repositories 2>nul
+mkdir app\services 2>nul
+mkdir app\schemas 2>nul
+mkdir tests 2>nul
+
+REM === Crear archivos vacíos si no existen ===
+type NUL > app\api\__init__.py
+type NUL > app\api\routers\__init__.py
+type NUL > app\core\__init__.py
+type NUL > app\repositories\__init__.py
+type NUL > app\services\__init__.py
+type NUL > app\schemas\__init__.py
+type NUL > app\deps.py
+type NUL > app\main.py
+type NUL > app\core\config.py
+type NUL > app\core\db.py
+type NUL > app\core\logging.py
+type NUL > app\api\routers\health.py
+type NUL > app\api\routers\alumnos.py
+type NUL > app\schemas\alumno.py
+type NUL > app\services\alumnos_service.py
+type NUL > app\repositories\alumnos_repo.py
+type NUL > tests\test_alumnos.py
+echo Estructura creada.
+
+int
+----------------------------------------------------------------
+
+
+List[str]
+----------------------------------------------------------------
+
+
+MIGRATION_SUMMARY.md
+----------------------------------------------------------------
+# 🎉 Migración a SQLModel Completada
+
+## ✅ Cambios Realizados
+
+### 1. **Dependencias Actualizadas**
+- ➕ Agregado `sqlmodel==0.0.21`
+- ➕ Agregado `sqlalchemy==2.0.32`
+- 🔄 Actualizado `pymysql[rsa]==1.1.2`
+
+### 2. **Schemas Refactorizados** (`alumnos_api/schemas/alumno.py`)
+- 🔄 Convertido de Pydantic puro a SQLModel
+- ➕ Nuevo modelo `Alumno` para la tabla de BD
+- ➕ Modelo base `AlumnoBase` compartido
+- ✅ Mantenidas validaciones existentes
+
+### 3. **Base de Datos Modernizada** (`alumnos_api/core/db.py`)
+- 🔄 Reemplazado PyMySQL directo por SQLAlchemy Engine
+- ➕ Connection pooling automático
+- ➕ Función `get_session()` para dependency injection
+- ✅ Función legacy `get_connection()` mantenida para compatibilidad
+
+### 4. **Repositorio con ORM** (`alumnos_api/repositories/alumnos_repo.py`)
+- 🔄 Eliminado SQL crudo, reemplazado por SQLModel queries
+- ➕ Type-safe queries con `select()`
+- ➕ Mejor manejo de errores y transacciones
+- ✅ Lógica de negocio mantenida
+
+### 5. **Dependency Injection** (`alumnos_api/deps.py`)
+- ➕ Implementado `SessionDep` para inyección de sesiones
+- ➕ Type hints mejorados con `Annotated`
+
+### 6. **Routers Modernizados**
+- 🔄 Endpoints usando dependency injection
+- ➕ Type hints más específicos
+- ✅ Misma API pública mantenida
+
+### 7. **Auto-inicialización** (`alumnos_api/main.py`)
+- ➕ Creación automática de tablas al arrancar
+- ➕ Logging mejorado del proceso de inicialización
+
+### 8. **Archivo de Configuración**
+- ➕ `.env.example` para nuevos usuarios
+- ✅ `.env` existente respetado
+
+---
+
+## 🚀 Ventajas de SQLModel
+
+### ✨ **Type Safety**
+```python
+# Antes (diccionarios sin tipos)
+def crear(conn, data) -> Dict[str, Any]:
+    ...
+
+# Ahora (modelos tipados)
+def crear(session: Session, data: AlumnoIn) -> Alumno:
+    ...
+```
+
+### 💉 **Dependency Injection**
+```python
+# Antes (manejo manual de conexiones)
+@router.get("")
+def listar():
+    conn = get_connection()
+    try:
+        return repo.listar(conn)
+    finally:
+        conn.close()
+
+# Ahora (inyección automática)
+@router.get("", response_model=List[AlumnoOut])
+def listar(session: SessionDep):
+    return repo.listar(session)
+```
+
+### 🔄 **Queries Type-Safe**
+```python
+# Antes (SQL crudo)
+cur.execute("SELECT * FROM alumnos ORDER BY id DESC")
+
+# Ahora (SQLModel query)
+statement = select(Alumno).order_by(desc(Alumno.id))
+```
+
+### 🛠️ **Auto Schema Management**
+- Creación automática de tablas
+- Validación de estructura
+- Migrations futuras más fáciles
+
+---
+
+## 🧪 Verificación
+
+✅ API iniciada correctamente  
+✅ Tablas creadas automáticamente  
+✅ Logging funcionando  
+✅ Health checks operativos  
+✅ Endpoints CRUD disponibles  
+
+## 📋 Próximos Pasos Recomendados
+
+1. **Crear tests unitarios** usando SQLModel
+2. **Implementar migrations** para cambios futuros de esquema
+3. **Añadir más validaciones** en los modelos
+4. **Optimizar queries** con eager loading si es necesario
+5. **Configurar logging avanzado** con structured logs
+
+---
+
+## 🔗 Enlaces Útiles
+
+- [SQLModel Documentation](https://sqlmodel.tiangolo.com/)
+- [FastAPI + SQLModel Tutorial](https://fastapi.tiangolo.com/tutorial/sql-databases/)
+- [SQLAlchemy 2.0 Docs](https://docs.sqlalchemy.org/en/20/)
+
+---
+
+**🎊 ¡Migración completada exitosamente! Tu API ahora usa SQLModel como ORM.**
+
+None
+----------------------------------------------------------------
+
+
+Path
+----------------------------------------------------------------
+
+
+README.md
+----------------------------------------------------------------
+# 📚 CRUD de Alumnos — FastAPI + SQLModel + MySQL
+
+Proyecto completo de ejemplo que implementa un **CRUD de alumnos** usando:
+
+- ⚙️ **Backend:** [FastAPI](https://fastapi.tiangolo.com/) + [SQLModel](https://sqlmodel.tiangolo.com/)
+- 🗄️ **Base de datos:** MySQL con SQLAlchemy
+- 💻 **Frontend:** HTML, CSS y JavaScript vanilla
+- 🌐 **CORS habilitado:** compatible con React, Vite o cualquier cliente web moderno
+
+---
+
+## 🚀 Características
+
+- API REST con endpoints CRUD (`GET`, `POST`, `PUT`, `DELETE`)
+- **SQLModel ORM** para manejo type-safe de base de datos
+- Validación de rango de notas (0.0 a 10.0)
+- Cálculo automático del promedio final:  
+  `promedioFinal = ((nota1 + nota2 + nota3)/3)*0.7 + notaFinal*0.3`
+- **Creación automática de tablas** con SQLModel
+- Health check de base de datos (`/health/db`)
+- CORS configurado para desarrollo
+- **Dependency Injection** para sesiones de base de datos
+
+---
+
+## 🧩 Estructura del proyecto
+
+```
+fastapi-api-alumnos-basico/
+│
+├── alumnos_api/
+│   ├── main.py              # Punto de entrada con auto-init de tablas
+│   ├── deps.py              # Dependencias de FastAPI (SessionDep)
+│   ├── api/routers/
+│   │   ├── alumnos.py       # CRUD endpoints con SQLModel
+│   │   └── health.py        # Health checks
+│   ├── core/
+│   │   ├── config.py        # Configuración con Pydantic Settings
+│   │   ├── db.py            # SQLAlchemy engine + Session factory
+│   │   ├── init_db.py       # Script para inicializar tablas
+│   │   └── logging.py       # Sistema de logging
+│   ├── repositories/
+│   │   └── alumnos_repo.py  # Lógica de datos con SQLModel queries
+│   ├── services/
+│   │   └── alumnos_service.py  # Cálculo de promedios
+│   └── schemas/
+│       └── alumno.py        # Modelos SQLModel (tabla + DTOs)
+├── tests/
+├── .env.example             # Configuración de ejemplo
+├── requirements.txt         # Incluye SQLModel
+└── README.md
+```
+
+---
+
+## ⚙️ Requisitos previos
+
+- Python 3.9+
+- MySQL Server 8.x
+- Node.js (opcional, solo si usas React/Vite)
+
+---
+
+## 🗄️ Script SQL de base de datos
+
+Ejecuta este script en tu servidor MySQL (por consola, Workbench o phpMyAdmin):
+
+```sql
+DROP DATABASE IF EXISTS crud_alumnos;
+CREATE DATABASE IF NOT EXISTS crud_alumnos;
+USE crud_alumnos;
+
+CREATE TABLE IF NOT EXISTS alumnos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    nota1 DOUBLE NOT NULL,
+    nota2 DOUBLE NOT NULL,
+    nota3 DOUBLE NOT NULL,
+    notaFinal DOUBLE NOT NULL,
+    promedioFinal DOUBLE NOT NULL
+);
+```
+
+---
+
+## ⚙️ Configuración del Backend
+
+### 1️⃣ Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 2️⃣ Configurar variables de entorno
+Copia y configura el archivo `.env`:
+```bash
+cp .env.example .env
+```
+
+Edita `.env` con tus datos de MySQL:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=crud_alumnos
+```
+
+### 3️⃣ Crear base de datos
+Ejecuta este script en MySQL:
+```sql
+CREATE DATABASE IF NOT EXISTS crud_alumnos;
+```
+
+> ✨ **Las tablas se crean automáticamente** gracias a SQLModel al iniciar la API.
+
+### 4️⃣ Ejecutar la API
+```bash
+.venv\Scripts\activate  
+uvicorn alumnos_api.main:app --reload
+```
+### 3️⃣ Ejecutar la API Pcshell
+```bash
+.\.venv\Scripts\Activate.ps1
+uvicorn alumnos_api.main:app --reload
+
+```
+
+📍 Accede a:
+- API root → http://127.0.0.1:8000/
+- Documentación Swagger → http://127.0.0.1:8000/docs  
+- Health check → http://127.0.0.1:8000/health/db
+
+---
+
+## 🌐 Frontend Vanilla
+
+### 1️⃣ Abrir el proyecto
+En la carpeta `frontend/`, abre el archivo `index.html` en el navegador  
+(recomendado: usar la extensión **Live Server** de VS Code).
+
+### 2️⃣ Interactuar con la API
+Podrás:
+- Crear nuevos alumnos
+- Editar notas existentes
+- Eliminar alumnos
+- Buscar por nombre en tiempo real
+
+🧮 El promedio final se calcula automáticamente en el servidor.
+
+---
+
+## 🔐 CORS (para React / Vite)
+
+Si desarrollas un frontend con React o Vite, tu backend ya acepta peticiones desde:
+
+```python
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+```
+
+Agrega más dominios si lo despliegas en producción.
+
+---
+
+## 🧠 Endpoints principales
+
+| Método | Endpoint | Descripción |
+|:-------|:----------|:-------------|
+| `GET` | `/` | Prueba general de la API |
+| `GET` | `/health/db` | Verifica conexión a MySQL |
+| `GET` | `/alumnos` | Lista todos los alumnos |
+| `GET` | `/alumnos/{id}` | Devuelve un alumno por ID |
+| `POST` | `/alumnos` | Crea un nuevo alumno |
+| `PUT` | `/alumnos/{id}` | Actualiza un alumno existente |
+| `DELETE` | `/alumnos/{id}` | Elimina un alumno |
+
+---
+
+## 🧪 Pruebas rápidas con curl o Postman
+
+**Crear alumno:**
+```bash
+curl -X POST http://127.0.0.1:8000/alumnos ^
+  -H "Content-Type: application/json" ^
+  -d "{"nombre":"Juan Carlos","nota1":9.0,"nota2":8.5,"nota3":9.0,"notaFinal":9.5}"
+```
+
+**Listar alumnos:**
+```bash
+curl http://127.0.0.1:8000/alumnos
+```
+
+---
+
+## 🧰 Tecnologías utilizadas
+
+| Componente | Tecnología |
+|-------------|-------------|
+| Backend | FastAPI + SQLModel |
+| Base de datos | MySQL 8 + SQLAlchemy |
+| ORM | SQLModel (Pydantic + SQLAlchemy) |
+| Dependency Injection | FastAPI Depends |
+| Frontend | HTML5, CSS3, JavaScript (ES6) |
+| Servidor | Uvicorn |
+
+---
+
+## 🆕 Novedades con SQLModel
+
+- **🎯 Type Safety:** Modelos tipados que funcionan tanto para API como BD
+- **🔄 Auto-migrations:** Creación automática de tablas
+- **💉 Dependency Injection:** Sesiones de BD mediante FastAPI Depends
+- **🧪 Fácil testing:** Modelos compartidos entre tests y producción
+- **📝 Menos código:** Un solo modelo para tabla, input y output
+- **🚀 Mejor rendimiento:** Connection pooling con SQLAlchemy
+
+---
+
+## 🧑‍💻 Autor
+
+**Juan Carlos Sulbarán González**  
+📧 sulbaranjc@gmail.com  
+📍 Madrid, España  
+
+> Proyecto educativo para enseñanza de programación y bases de datos.  
+> Licencia MIT — libre uso y adaptación.
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2MDc4NzM4N30.jbUUlRbY6YHKNLjrCv4X1k3DvEKxFf3ZnX3v1SG8Ncw
+
+recolector_fuentes.py
+----------------------------------------------------------------
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import argparse
+import sys
+import os
+import time
+from pathlib import Path
+
+# Directorios que NO queremos recorrer
+DEFAULT_IGNORED_DIRS = {
+    ".git", ".hg", ".svn", ".idea", ".vscode",
+    "node_modules", "bower_components",
+    ".venv", "venv", "env", ".pytest_cache", ".mypy_cache",
+    "__pycache__", "dist", "build", "target", "out", ".next", ".nuxt", ".expo",
+}
+
+# Extensiones típicas de binarios/medios que NO debemos volcar al TXT
+DEFAULT_BINARY_EXTS = {
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".ico", ".webp",
+    ".mp3", ".wav", ".flac", ".mp4", ".m4v", ".mov", ".avi", ".mkv",
+    ".pdf", ".zip", ".rar", ".7z", ".gz", ".bz2", ".xz", ".tar", ".iso",
+    ".ttf", ".otf", ".woff", ".woff2",
+    ".exe", ".dll", ".so", ".dylib", ".bin", ".class", ".jar",
+    ".ds_store",
+}
+
+# 🔒 Exclusiones por privacidad/ruido (por defecto)
+DEFAULT_EXCLUDED_NAMES = { ".env" }    # secretos
+DEFAULT_EXCLUDED_EXTS  = { ".log" }    # logs verbosos
+
+def looks_binary(sample: bytes) -> bool:
+    if b"\x00" in sample:
+        return True
+    weird = sum(1 for b in sample if b < 9 or (13 < b < 32) or b == 127)
+    return (len(sample) > 0 and weird / len(sample) > 0.30)
+
+def read_text_safely(p: Path, max_bytes: int) -> str:
+    size = p.stat().st_size
+    if size > max_bytes >= 0:
+        raise ValueError(f"Archivo demasiado grande ({size} bytes > {max_bytes}).")
+    with p.open("rb") as fh:
+        data = fh.read()
+    if looks_binary(data[:4096]):
+        raise ValueError("Archivo parece binario.")
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return data.decode("latin-1")
+        except UnicodeDecodeError:
+            return data.decode("utf-8", errors="replace")
+
+def normalize_patterns(csv: str):
+    if not csv:
+        return set()
+    return {s.strip() for s in csv.split(",") if s.strip()}
+
+def should_skip_path(path: Path, ignored_dirs, exclude_globs, excluded_names, excluded_exts):
+    # Ignora directorios por nombre exacto (bloquea la bajada en os.walk)
+    parts = set(part.lower() for part in path.parts)
+    if parts & {d.lower() for d in ignored_dirs}:
+        return True
+
+    # Archivos a excluir por nombre exacto o extensión (política por defecto)
+    name_lower = path.name.lower()
+    ext_lower = path.suffix.lower()
+    if name_lower in excluded_names or ext_lower in excluded_exts:
+        return True
+
+    # Aplica globs de exclusión manuales (--exclude)
+    rel = str(path)
+    for pat in exclude_globs:
+        try:
+            if path.match(pat) or rel.startswith(pat):
+                return True
+        except Exception:
+            continue
+    return False
+
+def human_time(seconds: float) -> str:
+    if seconds < 1:
+        return f"{int(seconds*1000)} ms"
+    if seconds < 60:
+        return f"{seconds:.2f} s"
+    m, s = divmod(int(seconds), 60)
+    return f"{m} min {s} s"
+
+def print_progress(current, total, prefix="", width=30, end=""):
+    # Barra simple: [#####.....] 42% (123/291)
+    if total <= 0:
+        msg = f"{prefix} procesando..."
+    else:
+        ratio = min(max(current / total, 0), 1)
+        filled = int(width * ratio)
+        bar = "#" * filled + "." * (width - filled)
+        pct = int(ratio * 100)
+        msg = f"{prefix} [{bar}] {pct:3d}% ({current}/{total})"
+    # Sobrescribe la línea en TTY, sino imprime normal
+    if sys.stdout.isatty():
+        print("\r" + msg, end=end, flush=True)
+    else:
+        print(msg, flush=True)
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Genera un repositorio.txt con todas las fuentes del proyecto."
+    )
+    parser.add_argument("--root", "-r", default=".", help="Carpeta raíz del proyecto (por defecto: .)")
+    parser.add_argument("--output", "-o", default="repositorio.txt", help="Archivo de salida (por defecto: repositorio.txt)")
+    parser.add_argument("--include-ext", default="", help="Extensiones a FORZAR inclusión (csv, con punto). Ej: .py,.js,.ts")
+    parser.add_argument("--exclude-ext", default="", help="Extensiones a excluir además de las binarias por defecto. Ej: .lock,.tmp")
+    parser.add_argument("--exclude", default="", help="Patrones/paths a excluir (csv, glob). Ej: tests/screenshots,**/*.snap")
+    parser.add_argument("--ignored-dirs", default="", help="Nombres de directorios a ignorar (csv). Añade a los por defecto.")
+    parser.add_argument("--extra-excluded-names", default="", help="Nombres extra a excluir (csv). Ej: .env.local,.env.production")
+    parser.add_argument("--extra-excluded-exts", default="", help="Extensiones extra a excluir (csv). Ej: .db,.sqlite")
+    parser.add_argument("--no-default-excludes", action="store_true", help="Desactiva exclusiones .env y *.log por defecto.")
+    parser.add_argument("--max-bytes", type=int, default=2_000_000, help="Tamaño máx por archivo (-1 ilimitado). Por defecto: 2MB")
+    parser.add_argument("--follow-symlinks", action="store_true", help="Seguir enlaces simbólicos (por defecto NO).")
+    parser.add_argument("--header-line", default="-" * 64, help="Separador bajo el nombre del archivo.")
+    parser.add_argument("--list-binaries", action="store_true", help="Agrega inventario de omitidos al final.")
+    parser.add_argument("--quiet", "-q", action="store_true", help="Modo silencioso: solo mensajes esenciales.")
+    args = parser.parse_args()
+
+    t0 = time.time()
+
+    root = Path(args.root).resolve()
+    output = Path(args.output).resolve()
+    include_exts = {e.lower() for e in normalize_patterns(args.include_ext)}
+    exclude_exts_cli = {e.lower() for e in normalize_patterns(args.exclude_ext)}
+    exclude_globs = normalize_patterns(args.exclude)
+    ignored_dirs = DEFAULT_IGNORED_DIRS | {d for d in normalize_patterns(args.ignored_dirs)}
+
+    # Exclusiones por privacidad/ruido
+    extra_names = {n for n in normalize_patterns(args.extra_excluded_names)}
+    extra_exts = {e.lower() for e in normalize_patterns(args.extra_excluded_exts)}
+    if args.no_default_excludes:
+        excluded_names = extra_names
+        excluded_exts = extra_exts
+    else:
+        excluded_names = DEFAULT_EXCLUDED_NAMES | extra_names
+        excluded_exts = DEFAULT_EXCLUDED_EXTS | extra_exts
+
+    auto_skip = {str(output)}  # Evitar incluir el propio archivo
+
+    if not args.quiet:
+        print(f"🚀 Iniciando recolección desde: {root}")
+        print(f"📄 Archivo de salida: {output}")
+
+    # --- PRE-SCAN: construir lista de candidatos para progreso visible
+    candidate_files = []
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=args.follow_symlinks):
+        # Evitar bajar a directorios ignorados
+        dirnames[:] = sorted([
+            d for d in dirnames
+            if not should_skip_path(Path(dirpath, d), ignored_dirs, exclude_globs, excluded_names, excluded_exts)
+        ])
+        for name in filenames:
+            p = Path(dirpath, name)
+            if str(p.resolve()) in auto_skip:
+                continue
+            if should_skip_path(p, ignored_dirs, exclude_globs, excluded_names, excluded_exts):
+                continue
+            candidate_files.append(Path(dirpath, name))
+
+    total_candidates = len(candidate_files)
+    if not args.quiet:
+        print(f"🔎 Archivos candidatos: {total_candidates}")
+        if sys.stdout.isatty():
+            print()  # línea en blanco antes de la barra
+
+    # --- PROCESAMIENTO con progreso
+    text_files = []
+    skipped_binary = []
+    skipped_large = []
+    skipped_policy = []
+    skipped_other = []
+
+    processed = 0
+    for p in sorted(candidate_files, key=lambda x: str(x).lower()):
+        processed += 1
+        if not args.quiet:
+            print_progress(processed, total_candidates, prefix="⏳ Procesando")
+
+        ext = p.suffix.lower()
+        # Exclusión CLI extra por extensión
+        if ext in exclude_exts_cli:
+            skipped_other.append((p, "ext_excluded_cli"))
+            continue
+        # Binarios conocidos
+        if ext in DEFAULT_BINARY_EXTS and ext not in include_exts:
+            skipped_binary.append((p, "binary_ext"))
+            continue
+
+        try:
+            content = read_text_safely(p, args.max_bytes)
+            text_files.append((p, content))
+        except ValueError as ve:
+            msg = str(ve)
+            if "demasiado grande" in msg:
+                skipped_large.append((p, "too_large"))
+            elif "binario" in msg:
+                skipped_binary.append((p, "binary_heuristic"))
+            else:
+                skipped_other.append((p, f"ValueError:{msg}"))
+        except Exception as ex:
+            skipped_other.append((p, f"Error:{type(ex).__name__}:{ex}"))
+
+    # --- ESCRITURA
+    rel_base = root
+    with output.open("w", encoding="utf-8", newline="\n") as out:
+        out.write(f"# Repositorio de fuentes\n")
+        out.write(f"# Raíz: {rel_base}\n")
+        out.write(f"# Archivos incluidos: {len(text_files)}\n\n")
+
+        for p, content in text_files:
+            rel = str(p.relative_to(rel_base))
+            out.write(rel + "\n")
+            out.write(args.header_line + "\n")
+            out.write(content)
+            if not content.endswith("\n"):
+                out.write("\n")
+            out.write("\n")  # espacio entre archivos
+
+        if args.list_binaries:
+            out.write("\n# --- Archivos omitidos (referencia) ---\n")
+            # Nota: los excluidos por política no entran al pre-scan, así que no están contados aquí.
+            if skipped_policy:
+                out.write("# Excluidos por política (.env, *.log, y extras):\n")
+                for p, reason in skipped_policy:
+                    out.write(f"- {p.relative_to(rel_base)} [{reason}]\n")
+            if skipped_binary:
+                out.write("# Binarios/medios:\n")
+                for p, reason in skipped_binary:
+                    out.write(f"- {p.relative_to(rel_base)} [{reason}]\n")
+            if skipped_large:
+                out.write("# Demasiado grandes:\n")
+                for p, reason in skipped_large:
+                    out.write(f"- {p.relative_to(rel_base)} [{reason}]\n")
+            if skipped_other:
+                out.write("# Otros omitidos/errores:\n")
+                for p, reason in skipped_other:
+                    out.write(f"- {p.relative_to(rel_base)} [{reason}]\n")
+
+    # --- FIN / RESUMEN
+    t1 = time.time()
+    if not args.quiet:
+        # Limpiar la línea de la barra en TTY
+        if sys.stdout.isatty():
+            print("\r" + " " * 80, end="\r")
+        print("✅ Proceso finalizado.")
+        print(f"📝 Incluidos en {output.name}: {len(text_files)} archivos")
+        print(f"⏱️ Duración: {human_time(t1 - t0)}")
+        print(f"📍 Ubicación: {output}")
+
+    # Mensaje final para integraciones o logs
+    print(f"Listo. Salida: {output}")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+requirements.txt
+----------------------------------------------------------------
+annotated-types==0.7.0
+anyio==4.11.0
+black==25.9.0
+certifi==2025.10.5
+click==8.3.0
+colorama==0.4.6
+dnspython==2.8.0
+email-validator==2.3.0
+fastapi==0.119.0
+fastapi-cli==0.0.13
+fastapi-cloud-cli==0.3.1
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.7.1
+httpx==0.28.1
+sqlmodel==0.0.21
+sqlalchemy==2.0.32
+pymysql[rsa]==1.1.2
+idna==3.11
+itsdangerous==2.2.0
+Jinja2==3.1.6
+markdown-it-py==4.0.0
+MarkupSafe==3.0.3
+mdurl==0.1.2
+mypy_extensions==1.1.0
+orjson==3.11.3
+packaging==25.0
+pathspec==0.12.1
+platformdirs==4.5.0
+pydantic==2.12.2
+pydantic-extra-types==2.10.6
+pydantic-settings==2.11.0
+pydantic_core==2.41.4
+Pygments==2.19.2
+python-dotenv==1.1.1
+python-multipart==0.0.20
+pytokens==0.1.10
+PyYAML==6.0.3
+rich==14.2.0
+rich-toolkit==0.15.1
+rignore==0.7.0
+sentry-sdk==2.41.0
+shellingham==1.5.4
+sniffio==1.3.1
+starlette==0.48.0
+typer==0.19.2
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+ujson==5.11.0
+urllib3==2.5.0
+uvicorn==0.37.0
+watchfiles==1.1.1
+websockets==15.0.1
+
+Set[str]
+----------------------------------------------------------------
+
+
+str
+----------------------------------------------------------------
+
+
+test_migration.py
+----------------------------------------------------------------
+"""
+Script de test para verificar la migración a SQLModel
+"""
+import sys
+import os
+
+# Agregar el directorio raíz al path para importar módulos
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from alumnos_api.core.db import engine, create_db_and_tables
+from alumnos_api.schemas.alumno import Alumno, AlumnoIn
+from sqlmodel import Session
+
+def test_sqlmodel_migration():
+    """Test básico para verificar que SQLModel funciona correctamente"""
+    
+    print("🧪 Iniciando test de migración a SQLModel...")
+    
+    # 1. Crear tablas
+    print("📊 Creando tablas...")
+    create_db_and_tables()
+    print("✅ Tablas creadas exitosamente")
+    
+    # 2. Test de inserción
+    print("📝 Insertando alumno de prueba...")
+    alumno_data = AlumnoIn(
+        nombre="Juan Test",
+        nota1=8.5,
+        nota2=9.0,
+        nota3=8.0,
+        notaFinal=9.2
+    )
+    
+    with Session(engine) as session:
+        # Crear alumno
+        promedio = ((alumno_data.nota1 + alumno_data.nota2 + alumno_data.nota3) / 3.0) * 0.7 + alumno_data.notaFinal * 0.3
+        
+        alumno = Alumno(
+            nombre=alumno_data.nombre,
+            nota1=alumno_data.nota1,
+            nota2=alumno_data.nota2,
+            nota3=alumno_data.nota3,
+            notaFinal=alumno_data.notaFinal,
+            promedioFinal=promedio
+        )
+        
+        session.add(alumno)
+        session.commit()
+        session.refresh(alumno)
+        
+        print(f"✅ Alumno creado con ID: {alumno.id}")
+        print(f"📊 Promedio calculado: {alumno.promedioFinal}")
+    
+    # 3. Test de consulta
+    print("🔍 Consultando alumnos...")
+    with Session(engine) as session:
+        from sqlmodel import select
+        statement = select(Alumno)
+        alumnos = session.exec(statement).all()
+        print(f"✅ Encontrados {len(alumnos)} alumnos en la base de datos")
+        
+        for alumno in alumnos:
+            print(f"   - {alumno.nombre}: {alumno.promedioFinal}")
+    
+    print("🎉 ¡Migración a SQLModel completada exitosamente!")
+
+if __name__ == "__main__":
+    test_sqlmodel_migration()
+
+tests\test_alumnos.py
+----------------------------------------------------------------
+
+
+total
+----------------------------------------------------------------
+
+
+Tuple[int
+----------------------------------------------------------------
+
+
+
+```
+
+Set[str]
+-----
+```
+
+```
+
+str
+-----
+```
+
+```
+
+total
+-----
+```
+
+```
+
+Tuple[int
+-----
+```
+
+```
+
