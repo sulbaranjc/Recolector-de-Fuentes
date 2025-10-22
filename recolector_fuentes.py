@@ -8,7 +8,6 @@ python recolector_fuentes.py -r . -o repositorio.txt --exclude "tests/screenshot
 ejecutar PowerShell:
 python .\recolector_fuentes.py -r . -o repositorio.txt --header-line
 
-
 Recolector de fuentes para empaquetar el contexto de un proyecto
 en uno o varios documentos de texto listos para pegar en ChatGPT.
 
@@ -21,6 +20,7 @@ Características:
 - Índice global (árbol, lista de rutas y mapeo archivo→chunk) en el primer chunk.
 - Ordena por relevancia para que los archivos más útiles aparezcan primero.
 - Opciones finas de include/exclude por patrón y extensión.
+- 🔧 Perfil Android: autodetección (o forzable con --android) para Gradle/Kotlin/Manifest/res.
 """
 
 from __future__ import annotations
@@ -42,11 +42,15 @@ DEFAULT_IGNORED_DIRS = {
     "node_modules", "dist", "build", "out", "target",
     "__pycache__", ".mypy_cache", ".pytest_cache", ".tox",
     ".venv", "venv", ".next", ".turbo", ".parcel-cache",
-    "coverage", ".gradle", ".DS_Store"
+    "coverage", ".gradle", ".DS_Store",
+    # Android / NDK / builds auxiliares
+    ".externalNativeBuild", ".cxx"
 }
 
 DEFAULT_EXCLUDED_NAMES = {
     ".env", ".env.local", ".env.production", ".env.development",
+    # Android: suelen contener rutas locales/secretos
+    "local.properties", "keystore.properties",
 }
 DEFAULT_EXCLUDED_EXTS = {".log", ".lock"}
 
@@ -97,7 +101,10 @@ LANG_BY_EXT = {
     "dockerfile": "dockerfile",
     ".gradle": "groovy",
     ".groovy": "groovy",
+    ".kts": "kotlin",      # Gradle Kotlin DSL
     ".kt": "kotlin",
+    ".properties": "ini",  # gradle.properties, local.properties
+    ".pro": "ini",         # proguard-rules.pro
     ".java": "java",
     ".c": "c",
     ".h": "c",
@@ -114,16 +121,29 @@ LANG_BY_EXT = {
 
 RELEVANCE_DIR_HINTS = (
     "src/", "app/", "apps/", "backend/", "server/", "api/",
-    "frontend/", "client/", "lib/", "core/", "services/", "packages/"
+    "frontend/", "client/", "lib/", "core/", "services/", "packages/",
+    # Android Studio
+    "app/src/", "app/src/main/", "app/src/main/java/",
+    "app/src/main/kotlin/", "app/src/main/res/",
+    "app/src/test/", "app/src/androidTest/"
 )
 RELEVANCE_TOP_FILES = (
     "requirements.txt", "pyproject.toml", "poetry.lock",
     "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock",
     ".env.example", ".tool-versions",
     "Dockerfile", "docker-compose.yml", "compose.yml", ".dockerignore",
+    # Android / Gradle
+    "settings.gradle", "settings.gradle.kts",
+    "build.gradle", "build.gradle.kts",
+    "gradle.properties", "proguard-rules.pro",
+    "AndroidManifest.xml",
     "Makefile", "README.md", "README.MD", "readme.md"
 )
-RELEVANCE_EXT_PRIORITY = (".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml", ".md", ".html", ".css")
+RELEVANCE_EXT_PRIORITY = (
+    ".py", ".ts", ".tsx", ".js", ".jsx",
+    ".kt", ".kts", ".xml",            # Android/Kotlin
+    ".json", ".yml", ".yaml", ".md", ".html", ".css"
+)
 
 # =========================
 # Utilidades
@@ -250,6 +270,7 @@ def collect_candidates(
     default_exts = DEFAULT_EXCLUDED_EXTS if use_default_excludes else set()
 
     for dirpath, dirnames, filenames in os.walk(root):
+        # filtra directorios por nombre literal
         dirnames[:] = [d for d in dirnames if d not in ignored_dirs]
 
         for name in filenames:
@@ -445,6 +466,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--header-line", "--header", "-H",
                    nargs="?", const="-----", default="-----",
                    help="Separador entre ruta y contenido. Si se pasa sin valor, usa '-----' (por defecto).")
+    # Perfil Android (autodetectable, pero se puede forzar)
+    p.add_argument("--android", action="store_true",
+                   help="Fuerza perfil Android (excluye build/.cxx/.externalNativeBuild, *.iml, etc.).")
     return p.parse_args()
 
 def main() -> None:
@@ -462,12 +486,33 @@ def main() -> None:
     if args.ignored_dirs:
         ignored_dirs |= set([d.strip() for d in args.ignored_dirs.split(",") if d.strip()])
 
-    exclude_patterns = split_csv(args.exclude)
+    # --- Perfil Android: autodetección (o forzado por flag)
+    android_markers = [
+        root / "settings.gradle", root / "settings.gradle.kts",
+        root / "app" / "src" / "main" / "AndroidManifest.xml",
+        root / "gradlew", root / "gradlew.bat"
+    ]
+    is_android = args.android or any(m.exists() for m in android_markers)
+
+    # Exclude patterns específicos Android (con glob sobre rutas relativas)
+    android_excludes: List[str] = []
+    if is_android:
+        android_excludes = [
+            "app/build/**",            # aunque 'build' ya está ignorado, esto asegura subrutas
+            "**/.cxx/**",
+            "**/.externalNativeBuild/**",
+            "**/*.iml",
+            ".idea/**",
+            "**/generated/**",
+            "**/captures/**"
+        ]
+
+    exclude_patterns = split_csv(args.exclude) + android_excludes
     include_ext = normalize_exts(args.include_ext)
     exclude_ext = normalize_exts(args.exclude_ext)
     use_default_excludes = not args.no_default_excludes
 
-    print("🔎 Escaneando workspace...")
+    print("🔎 Escaneando workspace" + (" (perfil Android)" if is_android else "") + "...")
     included_paths, omitted = collect_candidates(
         root=root,
         ignored_dirs=ignored_dirs,
